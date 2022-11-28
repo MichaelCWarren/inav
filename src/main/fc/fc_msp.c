@@ -1528,6 +1528,33 @@ static bool mspFcProcessOutCommand(uint16_t cmdMSP, sbuf_t *dst, mspPostProcessF
         break;
 #endif
 
+    case MSP2_INAV_MCW:   
+        sbufWriteU16(dst, armingFlags);
+        sbufWriteU8(dst, getHwGyroStatus());
+        sbufWriteU8(dst, getHwAccelerometerStatus());
+        sbufWriteU8(dst, getHwCompassStatus());
+        sbufWriteU8(dst, getHwBarometerStatus());
+        sbufWriteU8(dst, getHwGPSStatus());
+        sbufWriteU8(dst, calculateBatteryPercentage());
+        sbufWriteU16(dst, attitude.values.roll);
+        sbufWriteU16(dst, attitude.values.pitch);
+        sbufWriteU16(dst, DECIDEGREES_TO_DEGREES(attitude.values.yaw));
+        sbufWriteU32(dst, gpsSol.llh.lat);
+        sbufWriteU32(dst, gpsSol.llh.lon);
+        sbufWriteU16(dst, gpsSol.llh.alt/100); // meters
+        sbufWriteU16(dst, gpsSol.groundSpeed);
+        sbufWriteU16(dst, gpsSol.groundCourse);
+        sbufWriteU8(dst, gpsSol.fixType);
+        sbufWriteU8(dst, gpsSol.numSat);
+        sbufWriteU16(dst, GPS_distanceToHome);
+        sbufWriteU16(dst, GPS_directionToHome);
+        sbufWriteU8(dst, NAV_Status.mode);
+        sbufWriteU8(dst, NAV_Status.state);
+        sbufWriteU8(dst, NAV_Status.activeWpAction);
+        sbufWriteU8(dst, NAV_Status.activeWpNumber);
+        sbufWriteU16(dst, getHeadingHoldTarget());
+        break;
+
     default:
         return false;
     }
