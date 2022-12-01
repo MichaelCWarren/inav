@@ -1528,7 +1528,7 @@ static bool mspFcProcessOutCommand(uint16_t cmdMSP, sbuf_t *dst, mspPostProcessF
         break;
 #endif
     case MSP2_INAV_MCW:
-        sbufWriteU32(dst, micros() / 1000000); // On time (seconds)
+        sbufWriteU32(dst, micros() / 1000); // On time (seconds)
         sbufWriteU16(dst, armingFlags);
         
         uint8_t status = 0;
