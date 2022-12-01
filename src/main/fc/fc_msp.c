@@ -1527,32 +1527,61 @@ static bool mspFcProcessOutCommand(uint16_t cmdMSP, sbuf_t *dst, mspPostProcessF
         }
         break;
 #endif
-
-    case MSP2_INAV_MCW:   
+    case MSP2_INAV_MCW:
+        sbufWriteU32(dst, micros() / 1000000); // On time (seconds)
         sbufWriteU16(dst, armingFlags);
-        sbufWriteU8(dst, getHwGyroStatus());
-        sbufWriteU8(dst, getHwAccelerometerStatus());
-        sbufWriteU8(dst, getHwCompassStatus());
-        sbufWriteU8(dst, getHwBarometerStatus());
-        sbufWriteU8(dst, getHwGPSStatus());
+        
+        uint8_t status = 0;
+        hardwareSensorStatus_e gyro = getHwGyroStatus();
+        hardwareSensorStatus_e accel = getHwAccelerometerStatus();
+        hardwareSensorStatus_e compass = getHwCompassStatus();
+        hardwareSensorStatus_e baro = getHwBarometerStatus();
+        hardwareSensorStatus_e gps = getHwGPSStatus();
+
+        status |= (isHardwareHealthy() ? 1 : 0) << 7;
+        status |= (gyro != 0 && gyro != 3 ? 1 : 0) << 6;
+        status |= (accel != 0 && accel != 3 ? 1 : 0) << 5;
+        status |= (compass != 0 && compass != 3 ? 1 : 0) << 4;
+        status |= (baro != 0 && baro != 3 ? 1 : 0) << 3;
+        status |= (gps != 0 && gps != 3 ? 1 : 0) << 2;
+        status |= (navigationIsControllingThrottle() ? 1 : 0) << 1;
+
+        sbufWriteU8(dst, status);
         sbufWriteU8(dst, calculateBatteryPercentage());
-        sbufWriteU16(dst, attitude.values.roll);
-        sbufWriteU16(dst, attitude.values.pitch);
-        sbufWriteU16(dst, DECIDEGREES_TO_DEGREES(attitude.values.yaw));
-        sbufWriteU32(dst, gpsSol.llh.lat);
-        sbufWriteU32(dst, gpsSol.llh.lon);
-        sbufWriteU16(dst, gpsSol.llh.alt/100); // meters
-        sbufWriteU16(dst, gpsSol.groundSpeed);
-        sbufWriteU16(dst, gpsSol.groundCourse);
-        sbufWriteU8(dst, gpsSol.fixType);
-        sbufWriteU8(dst, gpsSol.numSat);
         sbufWriteU16(dst, GPS_distanceToHome);
         sbufWriteU16(dst, GPS_directionToHome);
+        sbufWriteU8(dst, gpsSol.fixType);
+        sbufWriteU8(dst, gpsSol.numSat);
         sbufWriteU8(dst, NAV_Status.mode);
         sbufWriteU8(dst, NAV_Status.state);
         sbufWriteU8(dst, NAV_Status.activeWpAction);
         sbufWriteU8(dst, NAV_Status.activeWpNumber);
         sbufWriteU16(dst, getHeadingHoldTarget());
+        sbufWriteU16(dst, attitude.values.roll);
+        sbufWriteU16(dst, attitude.values.pitch);
+        sbufWriteU16(dst, DECIDEGREES_TO_DEGREES(attitude.values.yaw));
+        sbufWriteU16(dst, (int16_t)lrintf(acc.accADCf[0] * 512));
+        sbufWriteU16(dst, (int16_t)lrintf(acc.accADCf[1] * 512));
+        sbufWriteU16(dst, (int16_t)lrintf(acc.accADCf[2] * 512));
+        sbufWriteU16(dst, gyroRateDps(0));
+        sbufWriteU16(dst, gyroRateDps(1));
+        sbufWriteU16(dst, gyroRateDps(2));
+        sbufWriteU16(dst, mag.magADC[0]);
+        sbufWriteU16(dst, mag.magADC[1]);
+        sbufWriteU16(dst, mag.magADC[2]);
+        sbufWriteU32(dst, gpsSol.llh.lat);
+        sbufWriteU32(dst, gpsSol.llh.lon);
+        sbufWriteU16(dst, gpsSol.groundCourse);
+        sbufWriteU16(dst, gpsSol.groundSpeed);
+        sbufWriteU16(dst, gpsSol.llh.alt/100); // meters
+        sbufWriteU32(dst, baroGetLatestAltitude());
+        sbufWriteU32(dst, lrintf(getEstimatedActualPosition(Z)));
+        sbufWriteU16(dst, lrintf(getEstimatedActualVelocity(Z)));
+        sbufWriteU16(dst, rxGetChannelValue(0));
+        sbufWriteU16(dst, rxGetChannelValue(1));
+        sbufWriteU16(dst, rxGetChannelValue(2));
+        sbufWriteU16(dst, rxGetChannelValue(3));
+        sbufWriteU8(dst, getThrottlePercent()); // Throttle Percent
         break;
 
     default:
