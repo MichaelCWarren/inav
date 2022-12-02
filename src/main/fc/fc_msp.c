@@ -1550,6 +1550,9 @@ static bool mspFcProcessOutCommand(uint16_t cmdMSP, sbuf_t *dst, mspPostProcessF
         sbufWriteU8(dst, calculateBatteryPercentage());
         sbufWriteU16(dst, GPS_distanceToHome);
         sbufWriteU16(dst, GPS_directionToHome);
+        sbufWriteU32(dst, GPS_home.lat);
+        sbufWriteU32(dst, GPS_home.lon);
+        sbufWriteU32(dst, GPS_home.alt/100);
         sbufWriteU8(dst, gpsSol.fixType);
         sbufWriteU8(dst, gpsSol.numSat);
         sbufWriteU8(dst, NAV_Status.mode);
